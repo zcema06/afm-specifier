@@ -469,6 +469,7 @@ function finishOptions(sel){ return FINISHES.map(f=>`<option value="${f.id}" ${f
 
 /* element refs for project form (ids use hyphens) */
 var p_name=document.getElementById('p-name'),p_client=document.getElementById('p-client'),p_ref=document.getElementById('p-ref'),p_spec=document.getElementById('p-spec'),p_finish=document.getElementById('p-finish'),p_cur=document.getElementById('p-cur');
+var k_doors=document.getElementById('k-doors'),k_items=document.getElementById('k-items'),k_total=document.getElementById('k-total'),k_gaps=document.getElementById('k-gaps');
 /* ---------- Project ---------- */
 function fillProjectForm(){
   p_name.value=state.project.name; p_client.value=state.project.client; p_ref.value=state.project.ref;
