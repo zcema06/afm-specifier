@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFM Hardware Specifier — M1</title>
+<style>
+  /* ============================ THEME ============================ */
+  :root{
+    --bg:#f4f6f8; --panel:#ffffff; --ink:#1c2733; --muted:#637488;
+    --line:#e2e8f0; --brand:#0f4c81; --brand-dk:#0a3a63; --accent:#1565c0;
+    --ok:#1b7f4b; --okbg:#e6f4ec; --warn:#b3541e; --warnbg:#fdeee2;
+    --flag:#b00020; --flagbg:#fdecef; --chip:#eef2f6; --shadow:0 1px 3px rgba(16,40,70,.08),0 1px 2px rgba(16,40,70,.06);
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
+  h1,h2,h3,h4{margin:0 0 .4em;font-weight:650;line-height:1.2}
+  h2{font-size:1.15rem} h3{font-size:1rem} h4{font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  a{color:var(--accent)}
+  /* ============================ LAYOUT ============================ */
+  header.topbar{position:sticky;top:0;z-index:50;background:var(--brand);color:#fff;
+       padding:10px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
+  .topbar .logo{font-weight:800;letter-spacing:.5px;font-size:1.1rem;display:flex;align-items:center;gap:8px}
+  .topbar .logo .mark{background:#fff;color:var(--brand);border-radius:6px;padding:2px 7px;font-size:.95rem}
+  .topbar .sub{font-size:.72rem;opacity:.85;font-weight:500}
+  .topbar .spacer{flex:1}
+  .topbar .proj{font-size:.78rem;opacity:.95;text-align:right;max-width:40%}
+  nav.tabs{position:sticky;top:48px;z-index:40;background:var(--panel);border-bottom:1px solid var(--line);
+       display:flex;gap:2px;overflow-x:auto;padding:0 8px;scrollbar-width:none}
+  nav.tabs::-webkit-scrollbar{display:none}
+  nav.tabs button{background:none;border:none;padding:12px 14px;font-size:.85rem;font-weight:600;color:var(--muted);
+       border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+  nav.tabs button.active{color:var(--brand);border-bottom-color:var(--brand)}
+  main{max-width:1080px;margin:0 auto;padding:16px}
+  .view{display:none} .view.active{display:block}
+  /* ============================ COMPONENTS ============================ */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+  .card.pad0{padding:0;overflow:hidden}
+  .row{display:flex;flex-wrap:wrap;gap:12px}
+  .grid{display:grid;gap:12px}
+  @media(min-width:680px){.grid.cols-2{grid-template-columns:1fr 1fr}.grid.cols-3{grid-template-columns:1fr 1fr 1fr}}
+  label.fld{display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:var(--muted);font-weight:600;flex:1;min-width:140px}
+  input,select,textarea{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);width:100%}
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+  button.btn{background:var(--brand);color:#fff;border:none;border-radius:8px;padding:10px 16px;font-weight:650;font-size:.85rem;cursor:pointer}
+  button.btn:hover{background:var(--brand-dk)}
+  button.btn.sec{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+  button.btn.sec:hover{background:#eef4fa}
+  button.btn.ghost{background:#fff;color:var(--muted);border:1px solid var(--line)}
+  button.btn.sm{padding:6px 10px;font-size:.78rem;border-radius:7px}
+  button.btn.danger{background:#fff;color:var(--flag);border:1px solid #f3c2cc}
+  .chip{display:inline-flex;align-items:center;gap:5px;background:var(--chip);border-radius:20px;padding:3px 10px;font-size:.74rem;font-weight:600;color:var(--muted)}
+  .chip.fr{background:#eaf1fb;color:var(--accent)}
+  .badge{display:inline-block;border-radius:5px;padding:2px 7px;font-size:.7rem;font-weight:700;letter-spacing:.02em}
+  .badge.ok{background:var(--okbg);color:var(--ok)} .badge.gap{background:var(--flagbg);color:var(--flag)}
+  .sku{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;font-weight:600;background:#f1f5f9;border-radius:5px;padding:1px 6px;color:#334}
+  .sku.gap{background:var(--flagbg);color:var(--flag)}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);font-size:.84rem;vertical-align:top}
+  th{font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);background:#fafcfe}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .muted{color:var(--muted)} .small{font-size:.78rem} .tiny{font-size:.72rem}
+  .total-row td{font-weight:700;background:#fafcfe}
+  .empty{text-align:center;color:var(--muted);padding:30px 16px}
+  .pill-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .pill-tabs button{background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:.78rem;font-weight:600;color:var(--muted);cursor:pointer}
+  .pill-tabs button.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .door-card .dh{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .door-card .dh .ref{font-size:1.05rem;font-weight:750;color:var(--brand)}
+  details.door{border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;background:#fff;overflow:hidden}
+  details.door>summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fafcfe}
+  details.door>summary::-webkit-details-marker{display:none}
+  details.door[open]>summary{border-bottom:1px solid var(--line)}
+  .sumtotal{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+  .flagline{background:var(--flagbg);border:1px solid #f3c2cc;border-radius:8px;padding:8px 11px;margin:8px 0;font-size:.8rem;color:#7a0016;display:flex;gap:8px;align-items:flex-start}
+  .flagline b{color:var(--flag)}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .kpis{display:flex;gap:10px;flex-wrap:wrap}
+  .kpi{flex:1;min-width:120px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+  .kpi .v{font-size:1.4rem;font-weight:750;color:var(--brand)} .kpi .l{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .itemline{display:grid;grid-template-columns:1fr auto;gap:6px 10px;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .itemline:last-child{border-bottom:none}
+  .itemline .nm{font-weight:600} .itemline .meta{font-size:.74rem;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .itemline .ctrls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .itemline select{width:auto;min-width:120px;padding:5px 8px;font-size:.78rem}
+  .price{font-variant-numeric:tabular-nums;font-weight:650;white-space:nowrap}
+  .catprod{border:1px solid var(--line);border-radius:var(--radius);padding:12px;background:#fff}
+  .catprod .fin{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .swatch{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:6px;padding:3px 7px;font-size:.72rem}
+  .dot{width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.18);display:inline-block}
+  .setcard{border:1px solid var(--line);border-radius:var(--radius);padding:14px;background:#fff}
+  .modal-bg{position:fixed;inset:0;background:rgba(16,30,50,.45);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:20px;overflow:auto}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;border-radius:12px;max-width:560px;width:100%;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.25);margin:auto}
+  .modal h3{margin-bottom:12px}
+  .hint{font-size:.76rem;color:var(--muted);margin-top:4px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.74rem;color:var(--muted);margin-top:6px}
+  /* ============================ PRINT ============================ */
+  @media print{
+    header.topbar,nav.tabs,.toolbar,.no-print,.modal-bg{display:none !important}
+    body{background:#fff;font-size:11px}
+    main{max-width:none;padding:0}
+    .view{display:none !important}.view.print-active{display:block !important}
+    .card{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid}
+    th{background:#f0f0f0 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .badge,.sku{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    a{color:inherit;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="logo"><span class="mark">AFM</span> Hardware Specifier</div>
+  <div class="sub">M1 · Door Schedule &amp; Ironmongery</div>
+  <div class="spacer"></div>
+  <div class="proj" id="projBadge">No project</div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-view="project" class="active">Project</button>
+  <button data-view="schedule">Door Schedule</button>
+  <button data-view="view">Schedule View</button>
+  <button data-view="sets">Hardware Sets</button>
+  <button data-view="catalogue">Catalogue</button>
+  <button data-view="npi">NPI / New SKU</button>
+</nav>
+
+<main>
+  <!-- ============== PROJECT ============== -->
+  <section class="view active" id="view-project">
+    <div class="card">
+      <h2>Project details</h2>
+      <p class="muted small" style="margin-top:-4px">Set up the project this door schedule belongs to. All data is held in memory for this session only.</p>
+      <div class="grid cols-3" style="margin-top:6px">
+        <label class="fld">Project name<input id="p-name" placeholder="e.g. Marina Tower — Fit-out"></label>
+        <label class="fld">Client<input id="p-client" placeholder="e.g. Emaar Properties"></label>
+        <label class="fld">Project ref<input id="p-ref" placeholder="e.g. AFM-2026-0142"></label>
+      </div>
+      <div class="grid cols-3" style="margin-top:12px">
+        <label class="fld">Specifier<input id="p-spec" placeholder="Your name"></label>
+        <label class="fld">Default finish
+          <select id="p-finish"></select>
+        </label>
+        <label class="fld">Currency
+          <select id="p-cur"><option value="AED">AED</option><option value="USD">USD</option><option value="GBP">GBP</option><option value="EUR">EUR</option></select>
+        </label>
+      </div>
+      <div style="margin-top:14px"><button class="btn" id="saveProj">Save project</button></div>
+    </div>
+
+    <div class="card">
+      <h2>Quick start</h2>
+      <p class="muted small">1 · Save project details &nbsp;→&nbsp; 2 · Add doors to the schedule &nbsp;→&nbsp; 3 · Assign a hardware set to each door &nbsp;→&nbsp; 4 · Adjust finishes / items &nbsp;→&nbsp; 5 · Review live SKUs &amp; pricing &nbsp;→&nbsp; 6 · Export schedule.</p>
+      <div style="margin-top:10px"><button class="btn sec" id="loadDemo">Load demo project</button> <span class="hint">Populates an example project with a few doors so you can explore the loop.</span></div>
+    </div>
+  </section>
+
+  <!-- ============== SCHEDULE ============== -->
+  <section class="view" id="view-schedule">
+    <div class="kpis" style="margin-bottom:14px">
+      <div class="kpi"><div class="v" id="k-doors">0</div><div class="l">Doors</div></div>
+      <div class="kpi"><div class="v" id="k-items">0</div><div class="l">Line items</div></div>
+      <div class="kpi"><div class="v" id="k-total">—</div><div class="l">Project total</div></div>
+      <div class="kpi"><div class="v" id="k-gaps">0</div><div class="l">NPI gaps</div></div>
+    </div>
+    <div class="toolbar">
+      <button class="btn" id="addDoor">+ Add door</button>
+      <button class="btn sec" id="addDoorSet">+ Add door &amp; assign set…</button>
+      <span class="spacer" style="flex:1"></span>
+      <span class="legend"><span><span class="badge ok">SKU&nbsp;OK</span> resolved</span><span><span class="badge gap">NPI</span> no SKU for finish</span></span>
+    </div>
+    <div id="doorList"></div>
+  </section>
+
+  <!-- ============== SCHEDULE VIEW ============== -->
+  <section class="view" id="view-view">
+    <div class="toolbar no-print">
+      <button class="btn" id="btnPrint">🖨 Print / Save PDF</button>
+      <button class="btn sec" id="btnCsv">⬇ Download CSV (Excel)</button>
+      <span class="hint">CSV opens directly in Excel / Google Sheets.</span>
+    </div>
+    <div id="scheduleDoc"></div>
+  </section>
+
+  <!-- ============== SETS ============== -->
+  <section class="view" id="view-sets">
+    <div class="card"><h2>Hardware set library</h2>
+      <p class="muted small" style="margin-top:-4px">Predefined, reusable ironmongery sets. Assign a set to a door to apply all its items at once, then fine-tune per door.</p>
+    </div>
+    <div class="grid cols-2" id="setList"></div>
+  </section>
+
+  <!-- ============== CATALOGUE ============== -->
+  <section class="view" id="view-catalogue">
+    <div class="card"><h2>Sample catalogue</h2>
+      <p class="muted small" style="margin-top:-4px">Representative AFM sample catalogue. SKUs follow the <b>model + variant + finish</b> encoding (e.g. <span class="sku">FH2701R01SN201</span>). The real ~1,000-SKU Oracle master export replaces the data block at the top of this file.</p>
+      <div class="pill-tabs" id="catFilter" style="margin-top:10px"></div>
+      <input id="catSearch" placeholder="Search model, name or SKU…" style="margin-top:4px">
+    </div>
+    <div id="catList" class="grid cols-2"></div>
+  </section>
+
+  <!-- ============== NPI ============== -->
+  <section class="view" id="view-npi">
+    <div class="card"><h2>NPI · New SKU requests</h2>
+      <p class="muted small" style="margin-top:-4px">Every door item whose product + finish combination has no SKU in the catalogue is listed here as a New Product Introduction candidate — ready to feed your existing new-SKU workflow.</p>
+    </div>
+    <div id="npiList"></div>
+  </section>
+</main>
+
+<!-- ============== ASSIGN-SET MODAL ============== -->
+<div class="modal-bg" id="setModal">
+  <div class="modal">
+    <h3 id="setModalTitle">Assign hardware set</h3>
+    <label class="fld" style="min-width:0">Choose a set<select id="setModalSelect"></select></label>
+    <div id="setModalPreview" class="small muted" style="margin-top:10px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn ghost" id="setModalCancel">Cancel</button>
+      <button class="btn" id="setModalApply">Apply set</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============== ADD-ITEM MODAL ============== -->
+<div class="modal-bg" id="itemModal">
+  <div class="modal">
+    <h3>Add catalogue item to door</h3>
+    <label class="fld" style="min-width:0">Category<select id="itemModalCat"></select></label>
+    <label class="fld" style="min-width:0;margin-top:10px">Product<select id="itemModalProd"></select></label>
+    <label class="fld" style="min-width:0;margin-top:10px">Finish<select id="itemModalFinish"></select></label>
+    <label class="fld" style="min-width:0;margin-top:10px">Qty<input id="itemModalQty" type="number" min="1" value="1"></label>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn ghost" id="itemModalCancel">Cancel</button>
+      <button class="btn" id="itemModalAdd">Add item</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =================================================================================
+   AFM HARDWARE SPECIFIER — M1
+   ---------------------------------------------------------------------------------
+   ▓▓ DATA BLOCK ▓▓  (everything between the START/END markers is the SAMPLE
+   catalogue + sets). This is the ONLY part that needs to change when the real
+   AFM Oracle master export (~1,000 SKUs) becomes available. Keep the SHAPE the
+   same and the rest of the app works unchanged. See README notes at END markers.
+   ================================================================================= */
+
+/* ===================== DATA BLOCK START ===================== */
+
+/* ---- Master finish list ----------------------------------------------------
+   Each finish has: id (2-letter code used in the SKU), a friendly name, a short
+   label, a numeric suffix used in the SKU encoding, and a swatch colour (UI only).
+   SKU encoding = MODEL + VARIANT + FINISH_ID + FINISH_NUM
+   e.g.  FH2701 + R01 + SN + 201  ->  FH2701R01SN201  (Serene lever, Satin)
+         FH2701 + R01 + BB + 101  ->  FH2701R01BB101  (Serene lever, Black)
+   --------------------------------------------------------------------------- */
+const FINISHES = [
+  { id:'SN', name:'Satin Nickel',     short:'Satin',     num:'201', color:'#c9cdd2' },
+  { id:'BB', name:'Matt Black',       short:'Black',     num:'101', color:'#1d1d1f' },
+  { id:'BZ', name:'Antique Bronze',   short:'Bronze',    num:'301', color:'#6b4a2b' },
+  { id:'PB', name:'Polished Brass',   short:'Polished',  num:'401', color:'#c9a227' },
+  { id:'SS', name:'Satin Stainless',  short:'Stainless', num:'501', color:'#aeb4ba' },
+  { id:'PC', name:'Polished Chrome',  short:'Chrome',    num:'601', color:'#dfe4e8' }
+];
+
+/* ---- Product categories (display order) ----------------------------------- */
+const CATEGORIES = [
+  'Handles & Levers','Door Locks','Cylinders','Hinges',
+  'Door Closers','Thumbturns','Panic / Exit Devices','Smart & Digital Locks'
+];
+
+/* ---- Helper: build the per-finish SKU map for a product --------------------
+   `priced` maps finishId -> price. Finishes NOT listed here are intentionally
+   "not catalogued yet" -> they become NPI / New-SKU-request candidates.        */
+function skus(model, variant, priced){
+  const out = {};
+  for(const f of FINISHES){
+    if(f.id in priced){
+      out[f.id] = { sku: model + variant + f.id + f.num, price: priced[f.id] };
+    }
+  }
+  return out;
+}
+
+/* ---- SAMPLE CATALOGUE -------------------------------------------------------
+   key      : stable id = model+variant (used by sets & doors)
+   model    : AFM model code      variant: rose/variant code
+   skus     : finishId -> { sku, price }   (built by skus() above)
+   Prices are illustrative sample list prices (per unit, project currency).      */
+const PRODUCTS = [
+  /* --- Handles & Levers (FH….) --- */
+  { key:'FH2701R01', model:'FH2701', variant:'R01', name:'Serene Lever on Round Rose', category:'Handles & Levers',
+    skus: skus('FH2701','R01',{SN:42,BB:45,BZ:58,PB:54,SS:48,PC:46}) },
+  { key:'FH2702R01', model:'FH2702', variant:'R01', name:'Quattro Lever on Square Rose', category:'Handles & Levers',
+    skus: skus('FH2702','R01',{SN:46,BB:49,BZ:62,SS:52,PC:50}) },
+  { key:'FH2715P02', model:'FH2715', variant:'P02', name:'Linea Lever on Backplate', category:'Handles & Levers',
+    skus: skus('FH2715','P02',{SN:54,BB:57,PB:69,SS:60}) },
+  { key:'FH2740R01', model:'FH2740', variant:'R01', name:'Aria Lever on Round Rose', category:'Handles & Levers',
+    skus: skus('FH2740','R01',{SN:39,BB:41,BZ:55,PB:51,SS:44,PC:43}) },
+  { key:'FH2810D01', model:'FH2810', variant:'D01', name:'Apex Pull Handle 300mm', category:'Handles & Levers',
+    skus: skus('FH2810','D01',{SN:64,BB:68,SS:72,PC:70}) },
+  { key:'FH2860R01', model:'FH2860', variant:'R01', name:'WC Turn & Release Set', category:'Handles & Levers',
+    skus: skus('FH2860','R01',{SN:28,BB:30,BZ:38,SS:32,PC:31}) },
+
+  /* --- Door Locks (FGML….) --- */
+  { key:'FGML50S01', model:'FGML50', variant:'S01', name:'Sashlock 60mm Backset', category:'Door Locks',
+    skus: skus('FGML50','S01',{SN:34,BB:36,SS:39,PC:37}) },
+  { key:'FGML52B01', model:'FGML52', variant:'B01', name:'Bathroom Lock 78mm', category:'Door Locks',
+    skus: skus('FGML52','B01',{SN:33,BB:35,SS:38,PC:36}) },
+  { key:'FGML55E01', model:'FGML55', variant:'E01', name:'Euro-Profile Mortice Lock', category:'Door Locks',
+    skus: skus('FGML55','E01',{SN:41,BB:43,SS:47,PC:45}) },
+  { key:'FGML70R01', model:'FGML70', variant:'R01', name:'Roller Latch (FD-rated)', category:'Door Locks',
+    skus: skus('FGML70','R01',{SN:22,SS:25,PC:24}) },
+
+  /* --- Cylinders (FGMCY….) --- */
+  { key:'FGMCYSA01', model:'FGMCY', variant:'SA01', name:'Euro Double Cylinder 70mm', category:'Cylinders',
+    skus: skus('FGMCY','SA01',{SN:29,BB:31,SS:33,PC:32}) },
+  { key:'FGMCYSA02', model:'FGMCY', variant:'SA02', name:'Euro Thumbturn Cylinder 70mm', category:'Cylinders',
+    skus: skus('FGMCY','SA02',{SN:34,BB:36,SS:39,PC:38}) },
+  { key:'FGMCYKA03', model:'FGMCY', variant:'KA03', name:'Keyed-Alike Cylinder Set', category:'Cylinders',
+    skus: skus('FGMCY','KA03',{SN:38,SS:43,PC:41}) },
+
+  /* --- Hinges (FGMHG….) --- */
+  { key:'FGMHGSA01', model:'FGMHG', variant:'SA01', name:'Ball-Bearing Hinge 102×76 (Grade 13)', category:'Hinges',
+    /* NOTE: intentional gap — no Black (BB) SKU yet -> NPI candidate */
+    skus: skus('FGMHG','SA01',{SN:9,SS:11,PC:10,PB:13}) },
+  { key:'FGMHGSA02', model:'FGMHG', variant:'SA02', name:'Fire-Rated Hinge FD60 (CE)', category:'Hinges',
+    skus: skus('FGMHG','SA02',{SN:12,SS:14,PC:13}) },
+  { key:'FGMHGRS03', model:'FGMHG', variant:'RS03', name:'Rising Butt Hinge', category:'Hinges',
+    skus: skus('FGMHG','RS03',{SN:11,SS:13}) },
+
+  /* --- Door Closers (FGMDC….) --- */
+  { key:'FGMDC30A01', model:'FGMDC30', variant:'A01', name:'Overhead Closer EN 2-4', category:'Door Closers',
+    /* NOTE: intentional gap — no Bronze (BZ) SKU yet -> NPI candidate */
+    skus: skus('FGMDC30','A01',{SN:78,BB:82,SS:88,PC:85}) },
+  { key:'FGMDC35C01', model:'FGMDC35', variant:'C01', name:'Cam-Action Closer EN 3-6 (FD)', category:'Door Closers',
+    skus: skus('FGMDC35','C01',{SN:104,BB:110,SS:118}) },
+  { key:'FGMDC40F01', model:'FGMDC40', variant:'F01', name:'Free-Swing Closer FD30/60', category:'Door Closers',
+    skus: skus('FGMDC40','F01',{SN:188,SS:205}) },
+
+  /* --- Thumbturns (FGMTT….) --- */
+  { key:'FGMTTSA01', model:'FGMTT', variant:'SA01', name:'Thumbturn & Release', category:'Thumbturns',
+    skus: skus('FGMTT','SA01',{SN:19,BB:21,BZ:27,SS:23,PC:22}) },
+  { key:'FGMTTEM02', model:'FGMTT', variant:'EM02', name:'Emergency Coin-Release Turn', category:'Thumbturns',
+    skus: skus('FGMTT','EM02',{SN:24,BB:26,SS:29,PC:28}) },
+
+  /* --- Panic / Exit Devices (FGMPE….) --- */
+  { key:'FGMPE80P01', model:'FGMPE80', variant:'P01', name:'Push-Bar Panic Exit (single)', category:'Panic / Exit Devices',
+    skus: skus('FGMPE80','P01',{SN:142,BB:150,SS:162}) },
+  { key:'FGMPE85T02', model:'FGMPE85', variant:'T02', name:'Touch-Bar Exit Device (CE/UL)', category:'Panic / Exit Devices',
+    skus: skus('FGMPE85','T02',{SN:178,SS:198}) },
+  { key:'FGMPE90O03', model:'FGMPE90', variant:'O03', name:'Outside Access Lever (Panic)', category:'Panic / Exit Devices',
+    skus: skus('FGMPE90','O03',{SN:64,BB:68,SS:73}) },
+
+  /* --- Smart & Digital Locks (FGMSL….) --- */
+  { key:'FGMSL10D01', model:'FGMSL10', variant:'D01', name:'Digital Keypad Lock', category:'Smart & Digital Locks',
+    skus: skus('FGMSL10','D01',{SN:212,BB:225,SS:240}) },
+  { key:'FGMSL20F02', model:'FGMSL20', variant:'F02', name:'Fingerprint Smart Lock', category:'Smart & Digital Locks',
+    skus: skus('FGMSL20','F02',{SN:368,BB:389}) },
+  { key:'FGMSL30N03', model:'FGMSL30', variant:'N03', name:'Networked Access Reader', category:'Smart & Digital Locks',
+    skus: skus('FGMSL30','N03',{SN:430,SS:455}) }
+];
+
+/* ---- HARDWARE SET LIBRARY ---------------------------------------------------
+   Each set is a reusable bundle of catalogue items with a default finish + qty.
+   `prod` references PRODUCTS.key. `finish` is a default finish id.
+   When a set is applied to a door, these become the door's editable line items. */
+const HARDWARE_SETS = [
+  { id:'SET-OFF', name:'Office single door — lever set',
+    desc:'Lever-on-rose, sashlock, euro cylinder, 1.5 pairs of hinges, surface closer.',
+    items:[
+      { prod:'FH2701R01', finish:'SN', qty:1 },
+      { prod:'FGML50S01', finish:'SN', qty:1 },
+      { prod:'FGMCYSA01', finish:'SN', qty:1 },
+      { prod:'FGMHGSA01', finish:'SN', qty:3 },
+      { prod:'FGMDC30A01',finish:'SN', qty:1 }
+    ]},
+  { id:'SET-FD30', name:'Fire door FD30 set',
+    desc:'Fire-rated lever, FD sashlock, cylinder, CE fire hinges, cam-action closer.',
+    items:[
+      { prod:'FH2740R01', finish:'SS', qty:1 },
+      { prod:'FGML55E01', finish:'SS', qty:1 },
+      { prod:'FGMCYSA01', finish:'SS', qty:1 },
+      { prod:'FGMHGSA02', finish:'SS', qty:3 },
+      { prod:'FGMDC35C01',finish:'SS', qty:1 }
+    ]},
+  { id:'SET-FD60', name:'Fire door FD60 set (free-swing)',
+    desc:'Heavy-duty fire set with free-swing closer and Grade-13 fire hinges.',
+    items:[
+      { prod:'FH2740R01', finish:'SS', qty:1 },
+      { prod:'FGML55E01', finish:'SS', qty:1 },
+      { prod:'FGMCYSA01', finish:'SS', qty:1 },
+      { prod:'FGMHGSA02', finish:'SS', qty:4 },
+      { prod:'FGMDC40F01',finish:'SS', qty:1 }
+    ]},
+  { id:'SET-BATH', name:'Bathroom set',
+    desc:'Lever, bathroom lock, thumbturn & release, hinges.',
+    items:[
+      { prod:'FH2860R01', finish:'SN', qty:1 },
+      { prod:'FGML52B01', finish:'SN', qty:1 },
+      { prod:'FGMTTSA01', finish:'SN', qty:1 },
+      { prod:'FGMHGSA01', finish:'SN', qty:2 }
+    ]},
+  { id:'SET-ESC', name:'Escape / final-exit door set',
+    desc:'Touch-bar panic exit, outside access lever, fire hinges, FD closer.',
+    items:[
+      { prod:'FGMPE85T02', finish:'SS', qty:1 },
+      { prod:'FGMPE90O03', finish:'SS', qty:1 },
+      { prod:'FGMHGSA02', finish:'SS', qty:3 },
+      { prod:'FGMDC35C01',finish:'SS', qty:1 }
+    ]},
+  { id:'SET-ENTRY', name:'Smart entrance set',
+    desc:'Fingerprint smart lock, pull handle, hinges.',
+    items:[
+      { prod:'FGMSL20F02', finish:'BB', qty:1 },
+      { prod:'FH2810D01',  finish:'BB', qty:1 },
+      { prod:'FGMHGSA01',  finish:'BB', qty:3 }   /* BB hinge -> intentional NPI gap */
+    ]}
+];
+
+/* ====================== DATA BLOCK END ======================
+   To swap in the real Oracle export, replace FINISHES, PRODUCTS and
+   HARDWARE_SETS above with the generated equivalents (same field names).
+   Nothing below this line needs to change. */
+
+/* =================================================================================
+   APP ENGINE  (catalogue-agnostic)
+   ================================================================================= */
+const PMAP = Object.fromEntries(PRODUCTS.map(p=>[p.key,p]));
+const FMAP = Object.fromEntries(FINISHES.map(f=>[f.id,f]));
+const SMAP = Object.fromEntries(HARDWARE_SETS.map(s=>[s.id,s]));
+
+const state = {
+  project:{ name:'', client:'', ref:'', spec:'', finish:'SN', cur:'AED' },
+  doors:[],
+  seq:1
+};
+
+const FIRE_RATINGS = ['None','FD30','FD60','FD90'];
+const HANDINGS = ['LH inward','LH outward','RH inward','RH outward'];
+const MATERIALS = ['Timber flush','Timber panelled','Steel','Glass','Aluminium'];
+
+/* ---- resolution: product+finish -> { sku, price, ok } ---- */
+function resolve(prodKey, finishId){
+  const p = PMAP[prodKey];
+  if(!p) return { ok:false, reason:'unknown-product', sku:'—', price:0 };
+  const entry = p.skus[finishId];
+  if(!entry) return { ok:false, reason:'no-finish-sku', sku:'NPI-REQ', price:0 };
+  return { ok:true, sku:entry.sku, price:entry.price };
+}
+function money(n){ return state.project.cur+' '+ (Math.round(n*100)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function doorTotal(d){ return d.items.reduce((s,it)=>{const r=resolve(it.prod,it.finish);return s+(r.ok?r.price*it.qty:0);},0); }
+function doorGaps(d){ return d.items.filter(it=>!resolve(it.prod,it.finish).ok); }
+function projectTotal(){ return state.doors.reduce((s,d)=>s+doorTotal(d),0); }
+function allGaps(){ const g=[]; state.doors.forEach(d=>doorGaps(d).forEach(it=>g.push({door:d,item:it}))); return g; }
+function lineCount(){ return state.doors.reduce((s,d)=>s+d.items.length,0); }
+
+/* =================================================================================
+   RENDERING
+   ================================================================================= */
+function el(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstChild; }
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function finishOptions(sel){ return FINISHES.map(f=>`<option value="${f.id}" ${f.id===sel?'selected':''}>${f.short} · ${f.name}</option>`).join(''); }
+
+/* ---------- Project ---------- */
+function fillProjectForm(){
+  p_name.value=state.project.name; p_client.value=state.project.client; p_ref.value=state.project.ref;
+  p_spec.value=state.project.spec; p_cur.value=state.project.cur;
+}
+function renderProjectBadge(){
+  const pr=state.project;
+  projBadge.textContent = pr.name ? (pr.name + (pr.ref? ' · '+pr.ref:'')) : 'No project';
+}
+
+/* ---------- Schedule (editable doors) ---------- */
+function renderSchedule(){
+  k_doors.textContent=state.doors.length;
+  k_items.textContent=lineCount();
+  k_total.textContent= state.doors.length? money(projectTotal()):'—';
+  k_gaps.textContent=allGaps().length;
+
+  const list=document.getElementById('doorList'); list.innerHTML='';
+  if(!state.doors.length){ list.appendChild(el(`<div class="card empty">No doors yet. Click <b>+ Add door</b> to start the schedule.</div>`)); return; }
+
+  state.doors.forEach(d=>{
+    const gaps=doorGaps(d);
+    const det=el(`<details class="door" ${d._open?'open':''}></details>`);
+    det.addEventListener('toggle',()=>{ d._open=det.open; });
+    const fr = d.fire && d.fire!=='None' ? `<span class="chip fr">${esc(d.fire)}</span>`:'';
+    det.appendChild(el(`<summary>
+        <span class="ref">${esc(d.ref||'(no ref)')}</span>
+        <span class="muted small">${esc(d.location||'—')}</span>
+        ${fr}
+        ${gaps.length?`<span class="badge gap">${gaps.length} NPI</span>`:''}
+        <span class="sumtotal">${money(doorTotal(d))}</span>
+      </summary>`));
+    const body=el(`<div style="padding:14px"></div>`);
+
+    /* door attribute editor */
+    body.appendChild(el(`<h4>Door</h4>`));
+    const attr=el(`<div class="grid cols-3"></div>`);
+    attr.appendChild(field('Reference', `<input value="${esc(d.ref)}" data-f="ref">`));
+    attr.appendChild(field('Location', `<input value="${esc(d.location)}" data-f="location">`));
+    attr.appendChild(field('Leaf size', `<input value="${esc(d.leaf)}" placeholder="e.g. 926×2040×44" data-f="leaf">`));
+    attr.appendChild(field('Fire rating', `<select data-f="fire">${FIRE_RATINGS.map(r=>`<option ${r===d.fire?'selected':''}>${r}</option>`).join('')}</select>`));
+    attr.appendChild(field('Handing', `<select data-f="handing">${HANDINGS.map(r=>`<option ${r===d.handing?'selected':''}>${r}</option>`).join('')}</select>`));
+    attr.appendChild(field('Leaf / material', `<select data-f="material">${MATERIALS.map(r=>`<option ${r===d.material?'selected':''}>${r}</option>`).join('')}</select>`));
+    attr.querySelectorAll('[data-f]').forEach(inp=>{
+      inp.addEventListener('change',e=>{ d[e.target.dataset.f]=e.target.value; renderSchedule(); renderAll(); });
+    });
+    body.appendChild(attr);
+
+    /* hardware set bar */
+    const setbar=el(`<div class="toolbar" style="margin-top:14px;margin-bottom:6px"></div>`);
+    setbar.appendChild(el(`<h4 style="margin:0">Ironmongery — ${d.setId?esc(SMAP[d.setId]?.name||d.setId):'<span class="muted">no set assigned</span>'}</h4>`));
+    const sp=el(`<span style="flex:1"></span>`); setbar.appendChild(sp);
+    const bAssign=el(`<button class="btn sm sec">${d.setId?'Change set':'Assign set'}</button>`);
+    bAssign.onclick=()=>openSetModal(d.id);
+    const bAdd=el(`<button class="btn sm ghost">+ Add item</button>`); bAdd.onclick=()=>openItemModal(d.id);
+    const bDel=el(`<button class="btn sm danger">Delete door</button>`);
+    bDel.onclick=()=>{ if(confirm('Delete door '+(d.ref||'')+'?')){ state.doors=state.doors.filter(x=>x!==d); renderAll(); } };
+    setbar.appendChild(bAssign); setbar.appendChild(bAdd); setbar.appendChild(bDel);
+    body.appendChild(setbar);
+
+    /* line items */
+    if(!d.items.length){ body.appendChild(el(`<div class="muted small" style="padding:8px 0">No items. Assign a set or add items individually.</div>`)); }
+    const wrap=el(`<div></div>`);
+    d.items.forEach((it,idx)=>{
+      const p=PMAP[it.prod]; const r=resolve(it.prod,it.finish);
+      const line=el(`<div class="itemline"></div>`);
+      const left=el(`<div></div>`);
+      left.appendChild(el(`<div class="nm">${esc(p?p.name:it.prod)}</div>`));
+      const meta=el(`<div class="meta"></div>`);
+      meta.appendChild(el(`<span class="chip">${esc(p?p.category:'?')}</span>`));
+      meta.appendChild(el(`<span class="sku ${r.ok?'':'gap'}">${esc(r.sku)}</span>`));
+      meta.appendChild(el(`<span class="badge ${r.ok?'ok':'gap'}">${r.ok?'SKU OK':'NPI'}</span>`));
+      left.appendChild(meta);
+      if(!r.ok){
+        left.appendChild(el(`<div class="flagline"><b>⚑ NPI</b><div>${esc(p?p.name:it.prod)} is not catalogued in <b>${esc(FMAP[it.finish]?.name||it.finish)}</b> yet — flag as a <b>new SKU request</b>. Suggested code: <span class="sku gap">${esc(p?p.model+p.variant+it.finish+(FMAP[it.finish]?.num||'000'):'')}</span></div></div>`));
+      }
+      const right=el(`<div class="ctrls"></div>`);
+      const fsel=el(`<select title="Finish">${finishOptions(it.finish)}</select>`);
+      fsel.onchange=e=>{ it.finish=e.target.value; renderSchedule(); renderAll(); };
+      const qty=el(`<input type="number" min="1" value="${it.qty}" style="width:62px;padding:5px 8px" title="Qty">`);
+      qty.onchange=e=>{ it.qty=Math.max(1,parseInt(e.target.value)||1); renderSchedule(); renderAll(); };
+      const price=el(`<span class="price">${r.ok?money(r.price*it.qty):'—'}</span>`);
+      const rm=el(`<button class="btn sm ghost" title="Remove">✕</button>`);
+      rm.onclick=()=>{ d.items.splice(idx,1); renderSchedule(); renderAll(); };
+      right.appendChild(el(`<span class="tiny muted">×</span>`));
+      right.appendChild(qty); right.appendChild(fsel); right.appendChild(price); right.appendChild(rm);
+      line.appendChild(left); line.appendChild(right);
+      wrap.appendChild(line);
+    });
+    body.appendChild(wrap);
+    body.appendChild(el(`<div style="text-align:right;margin-top:10px;font-weight:700">Door subtotal: ${money(doorTotal(d))}</div>`));
+    det.appendChild(body);
+    list.appendChild(det);
+  });
+}
+function field(label,inner){ return el(`<label class="fld">${esc(label)}${inner}</label>`); }
+
+/* ---------- Schedule View (read-only doc) ---------- */
+function renderScheduleDoc(){
+  const host=document.getElementById('scheduleDoc'); host.innerHTML='';
+  const pr=state.project;
+  const head=el(`<div class="card">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:flex-start">
+      <div><h2 style="margin-bottom:2px">Door &amp; Ironmongery Schedule</h2>
+        <div class="muted small">${esc(pr.name||'Untitled project')}${pr.client?' · '+esc(pr.client):''}${pr.ref?' · '+esc(pr.ref):''}</div></div>
+      <div class="small muted" style="text-align:right">Specifier: ${esc(pr.spec||'—')}<br>Generated ${new Date().toLocaleDateString()}<br>${state.doors.length} doors · ${money(projectTotal())}</div>
+    </div></div>`);
+  host.appendChild(head);
+  if(!state.doors.length){ host.appendChild(el(`<div class="card empty">No doors to show. Add doors in the Door Schedule tab.</div>`)); return; }
+
+  state.doors.forEach(d=>{
+    const card=el(`<div class="card pad0"></div>`);
+    card.appendChild(el(`<div style="padding:11px 14px;background:#fafcfe;border-bottom:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <b style="color:var(--brand);font-size:1rem">${esc(d.ref||'(no ref)')}</b>
+        <span class="muted small">${esc(d.location||'')}</span>
+        ${d.fire&&d.fire!=='None'?`<span class="chip fr">${esc(d.fire)}</span>`:''}
+        <span class="chip">${esc(d.handing||'')}</span>
+        <span class="chip">${esc(d.material||'')}</span>
+        ${d.leaf?`<span class="chip">${esc(d.leaf)}</span>`:''}
+        ${d.setId?`<span class="muted tiny">Set: ${esc(SMAP[d.setId]?.name||d.setId)}</span>`:''}
+        <span style="flex:1"></span><b class="price">${money(doorTotal(d))}</b>
+      </div>`));
+    const tbl=el(`<table><thead><tr><th>Item</th><th>Category</th><th>SKU</th><th>Finish</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Line</th></tr></thead><tbody></tbody></table>`);
+    const tb=tbl.querySelector('tbody');
+    if(!d.items.length){ tb.appendChild(el(`<tr><td colspan="7" class="muted">No items.</td></tr>`)); }
+    d.items.forEach(it=>{
+      const p=PMAP[it.prod]; const r=resolve(it.prod,it.finish);
+      tb.appendChild(el(`<tr>
+        <td>${esc(p?p.name:it.prod)}</td>
+        <td class="muted">${esc(p?p.category:'')}</td>
+        <td><span class="sku ${r.ok?'':'gap'}">${esc(r.sku)}</span> ${r.ok?'':'<span class="badge gap">NPI</span>'}</td>
+        <td>${esc(FMAP[it.finish]?.short||it.finish)}</td>
+        <td class="num">${it.qty}</td>
+        <td class="num">${r.ok?money(r.price):'—'}</td>
+        <td class="num">${r.ok?money(r.price*it.qty):'—'}</td></tr>`));
+    });
+    tb.appendChild(el(`<tr class="total-row"><td colspan="6">Door subtotal</td><td class="num">${money(doorTotal(d))}</td></tr>`));
+    card.appendChild(tbl);
+    host.appendChild(card);
+  });
+  host.appendChild(el(`<div class="card" style="text-align:right;font-size:1.05rem;font-weight:750">Project total: ${money(projectTotal())}</div>`));
+}
+
+/* ---------- Sets ---------- */
+function renderSets(){
+  const host=document.getElementById('setList'); host.innerHTML='';
+  HARDWARE_SETS.forEach(s=>{
+    const c=el(`<div class="setcard"></div>`);
+    c.appendChild(el(`<h3>${esc(s.name)}</h3><div class="muted small" style="margin:-4px 0 8px">${esc(s.desc)}</div>`));
+    const tbl=el(`<table><tbody></tbody></table>`); const tb=tbl.querySelector('tbody');
+    s.items.forEach(it=>{
+      const p=PMAP[it.prod]; const r=resolve(it.prod,it.finish);
+      tb.appendChild(el(`<tr><td>${esc(p?p.name:it.prod)} <span class="tiny muted">×${it.qty}</span></td>
+        <td>${esc(FMAP[it.finish]?.short||it.finish)}</td>
+        <td><span class="sku ${r.ok?'':'gap'}">${esc(r.sku)}</span></td></tr>`));
+    });
+    c.appendChild(tbl);
+    host.appendChild(c);
+  });
+}
+
+/* ---------- Catalogue ---------- */
+let catFilterCat='All';
+function renderCatFilter(){
+  const host=document.getElementById('catFilter'); host.innerHTML='';
+  ['All',...CATEGORIES].forEach(cat=>{
+    const b=el(`<button class="${cat===catFilterCat?'active':''}">${esc(cat)}</button>`);
+    b.onclick=()=>{catFilterCat=cat;renderCatFilter();renderCatalogue();};
+    host.appendChild(b);
+  });
+}
+function renderCatalogue(){
+  const host=document.getElementById('catList'); host.innerHTML='';
+  const q=(document.getElementById('catSearch').value||'').toLowerCase();
+  PRODUCTS.filter(p=>catFilterCat==='All'||p.category===catFilterCat)
+    .filter(p=>{ if(!q)return true; const hay=(p.model+p.variant+p.name+p.category+Object.values(p.skus).map(s=>s.sku).join(' ')).toLowerCase(); return hay.includes(q);})
+    .forEach(p=>{
+      const c=el(`<div class="catprod"></div>`);
+      c.appendChild(el(`<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
+          <h3 style="margin:0">${esc(p.name)}</h3><span class="sku">${esc(p.model+p.variant)}</span></div>
+          <div class="muted tiny" style="margin:2px 0 4px">${esc(p.category)}</div>`));
+      const fin=el(`<div class="fin"></div>`);
+      FINISHES.forEach(f=>{
+        const e=p.skus[f.id];
+        if(e){ fin.appendChild(el(`<span class="swatch"><span class="dot" style="background:${f.color}"></span>${esc(f.short)} · <span class="sku">${esc(e.sku)}</span> · ${money(e.price)}</span>`)); }
+      });
+      /* show gaps */
+      const missing=FINISHES.filter(f=>!p.skus[f.id]);
+      if(missing.length){ fin.appendChild(el(`<span class="swatch" style="border-color:#f3c2cc;color:var(--flag)">No SKU: ${missing.map(f=>esc(f.short)).join(', ')}</span>`)); }
+      c.appendChild(fin);
+      host.appendChild(c);
+    });
+  if(!host.children.length) host.appendChild(el(`<div class="card empty">No products match.</div>`));
+}
+
+/* ---------- NPI ---------- */
+function renderNpi(){
+  const host=document.getElementById('npiList'); host.innerHTML='';
+  const gaps=allGaps();
+  if(!gaps.length){ host.appendChild(el(`<div class="card empty">No NPI gaps. Every specified item resolves to a catalogue SKU. ✓</div>`)); return; }
+  const card=el(`<div class="card pad0"></div>`);
+  const tbl=el(`<table><thead><tr><th>Door</th><th>Product</th><th>Model</th><th>Requested finish</th><th>Suggested new SKU</th><th class="num">Qty</th></tr></thead><tbody></tbody></table>`);
+  const tb=tbl.querySelector('tbody');
+  gaps.forEach(({door,item})=>{
+    const p=PMAP[item.prod]; const f=FMAP[item.finish];
+    tb.appendChild(el(`<tr>
+      <td><b>${esc(door.ref||'—')}</b><div class="tiny muted">${esc(door.location||'')}</div></td>
+      <td>${esc(p?p.name:item.prod)}<div class="tiny muted">${esc(p?p.category:'')}</div></td>
+      <td><span class="sku">${esc(p?p.model+p.variant:'')}</span></td>
+      <td>${esc(f?f.name:item.finish)}</td>
+      <td><span class="sku gap">${esc(p?p.model+p.variant+item.finish+(f?f.num:'000'):'')}</span></td>
+      <td class="num">${item.qty}</td></tr>`));
+  });
+  card.appendChild(tbl);
+  host.appendChild(el(`<div class="flagline" style="margin-bottom:12px"><b>⚑</b><div><b>${gaps.length}</b> item${gaps.length>1?'s':''} need a new SKU. These combinations exist in the spec but not in the catalogue — export and route to the new-SKU / NPI workflow.</div></div>`));
+  host.appendChild(card);
+  const btn=el(`<div style="margin-top:12px"><button class="btn sec" id="npiCsv">⬇ Export NPI list (CSV)</button></div>`);
+  host.appendChild(btn);
+  document.getElementById('npiCsv').onclick=exportNpiCsv;
+}
+
+/* =================================================================================
+   DOOR / SET / ITEM ACTIONS
+   ================================================================================= */
+function newDoor(setId){
+  const n=state.seq++;
+  const d={ id:'D'+Date.now()+n, ref:'D'+String(n).padStart(2,'0'), location:'', leaf:'', fire:'None',
+            handing:HANDINGS[0], material:MATERIALS[0], setId:null, items:[], _open:true };
+  state.doors.push(d);
+  if(setId) applySet(d,setId);
+  return d;
+}
+function applySet(d,setId){
+  const s=SMAP[setId]; if(!s)return;
+  d.setId=setId;
+  d.items=s.items.map(it=>({ prod:it.prod, finish:it.finish, qty:it.qty }));
+}
+
+/* set modal */
+let setModalDoorId=null;
+function openSetModal(doorId){
+  setModalDoorId=doorId;
+  const sel=document.getElementById('setModalSelect');
+  sel.innerHTML=HARDWARE_SETS.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  updateSetPreview();
+  document.getElementById('setModal').classList.add('show');
+}
+function updateSetPreview(){
+  const s=SMAP[document.getElementById('setModalSelect').value];
+  document.getElementById('setModalPreview').innerHTML = s? '<b>Includes:</b> '+s.items.map(it=>esc((PMAP[it.prod]?.name||it.prod))+' ×'+it.qty).join(', ')+'.<br><span class="tiny">Default finishes applied; you can change them per item after assigning.</span>' : '';
+}
+
+/* item modal */
+let itemModalDoorId=null;
+function openItemModal(doorId){
+  itemModalDoorId=doorId;
+  const cat=document.getElementById('itemModalCat');
+  cat.innerHTML=CATEGORIES.map(c=>`<option>${esc(c)}</option>`).join('');
+  fillItemProducts();
+  document.getElementById('itemModalFinish').innerHTML=finishOptions(state.project.finish);
+  document.getElementById('itemModalQty').value=1;
+  document.getElementById('itemModal').classList.add('show');
+}
+function fillItemProducts(){
+  const cat=document.getElementById('itemModalCat').value;
+  document.getElementById('itemModalProd').innerHTML=
+    PRODUCTS.filter(p=>p.category===cat).map(p=>`<option value="${p.key}">${esc(p.name)} (${esc(p.model+p.variant)})</option>`).join('');
+}
+
+/* =================================================================================
+   EXPORT
+   ================================================================================= */
+function csvCell(v){ v=(v==null?'':String(v)); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function download(name,content,type){
+  const blob=new Blob([content],{type:type||'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},100);
+}
+function exportScheduleCsv(){
+  const pr=state.project;
+  const rows=[['Project',pr.name],['Client',pr.client],['Ref',pr.ref],['Currency',pr.cur],[],
+    ['Door Ref','Location','Fire','Handing','Material','Leaf','Set','Item','Category','SKU','SKU Status','Finish','Qty','Unit Price','Line Total']];
+  state.doors.forEach(d=>{
+    if(!d.items.length){ rows.push([d.ref,d.location,d.fire,d.handing,d.material,d.leaf,SMAP[d.setId]?.name||'','—','','','','','','','']); }
+    d.items.forEach(it=>{
+      const p=PMAP[it.prod]; const r=resolve(it.prod,it.finish);
+      rows.push([d.ref,d.location,d.fire,d.handing,d.material,d.leaf,SMAP[d.setId]?.name||'',
+        p?p.name:it.prod, p?p.category:'', r.sku, r.ok?'OK':'NPI / NEW SKU REQUIRED',
+        FMAP[it.finish]?.name||it.finish, it.qty, r.ok?r.price:'', r.ok?(r.price*it.qty):'']);
+    });
+    rows.push([d.ref,'','','','','','','','','','','','SUBTOTAL','',doorTotal(d)]);
+  });
+  rows.push([]); rows.push(['','','','','','','','','','','','','','PROJECT TOTAL',projectTotal()]);
+  const csv=rows.map(r=>r.map(csvCell).join(',')).join('\n');
+  download((pr.ref||'AFM-schedule')+'.csv', csv);
+}
+function exportNpiCsv(){
+  const rows=[['Door Ref','Location','Product','Model','Category','Requested Finish','Suggested New SKU','Qty']];
+  allGaps().forEach(({door,item})=>{
+    const p=PMAP[item.prod]; const f=FMAP[item.finish];
+    rows.push([door.ref,door.location,p?p.name:item.prod,p?p.model+p.variant:'',p?p.category:'',
+      f?f.name:item.finish, p?(p.model+p.variant+item.finish+(f?f.num:'000')):'', item.qty]);
+  });
+  download((state.project.ref||'AFM')+'-NPI-requests.csv', rows.map(r=>r.map(csvCell).join(',')).join('\n'));
+}
+
+/* =================================================================================
+   NAV + WIRING
+   ================================================================================= */
+function showView(name){
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));
+  if(name==='schedule')renderSchedule();
+  if(name==='view')renderScheduleDoc();
+  if(name==='sets')renderSets();
+  if(name==='catalogue'){renderCatFilter();renderCatalogue();}
+  if(name==='npi')renderNpi();
+  window.scrollTo(0,0);
+}
+function renderAll(){ renderProjectBadge(); renderSchedule(); renderScheduleDoc(); renderNpi(); }
+
+document.getElementById('tabs').addEventListener('click',e=>{ if(e.target.dataset.view) showView(e.target.dataset.view); });
+
+/* project form */
+function buildFinishSelect(){ p_finish.innerHTML=finishOptions(state.project.finish); }
+document.getElementById('saveProj').onclick=()=>{
+  state.project.name=p_name.value.trim(); state.project.client=p_client.value.trim();
+  state.project.ref=p_ref.value.trim(); state.project.spec=p_spec.value.trim();
+  state.project.finish=p_finish.value; state.project.cur=p_cur.value;
+  renderAll(); showView('schedule');
+};
+p_finish && 0;
+
+/* schedule buttons */
+document.getElementById('addDoor').onclick=()=>{ newDoor(null); renderSchedule(); renderAll(); };
+document.getElementById('addDoorSet').onclick=()=>{ const d=newDoor(null); openSetModal(d.id); renderSchedule(); };
+
+/* set modal wiring */
+document.getElementById('setModalSelect').onchange=updateSetPreview;
+document.getElementById('setModalCancel').onclick=()=>document.getElementById('setModal').classList.remove('show');
+document.getElementById('setModalApply').onclick=()=>{
+  const d=state.doors.find(x=>x.id===setModalDoorId);
+  if(d) applySet(d,document.getElementById('setModalSelect').value);
+  document.getElementById('setModal').classList.remove('show');
+  renderSchedule(); renderAll();
+};
+/* item modal wiring */
+document.getElementById('itemModalCat').onchange=fillItemProducts;
+document.getElementById('itemModalCancel').onclick=()=>document.getElementById('itemModal').classList.remove('show');
+document.getElementById('itemModalAdd').onclick=()=>{
+  const d=state.doors.find(x=>x.id===itemModalDoorId); if(!d)return;
+  d.items.push({ prod:document.getElementById('itemModalProd').value, finish:document.getElementById('itemModalFinish').value,
+                 qty:Math.max(1,parseInt(document.getElementById('itemModalQty').value)||1) });
+  document.getElementById('itemModal').classList.remove('show');
+  renderSchedule(); renderAll();
+};
+[...document.querySelectorAll('.modal-bg')].forEach(m=>m.addEventListener('click',e=>{ if(e.target===m)m.classList.remove('show'); }));
+
+/* catalogue search */
+document.getElementById('catSearch').addEventListener('input',renderCatalogue);
+
+/* export buttons */
+document.getElementById('btnCsv').onclick=exportScheduleCsv;
+document.getElementById('btnPrint').onclick=()=>{
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('print-active'));
+  renderScheduleDoc();
+  document.getElementById('view-view').classList.add('print-active');
+  window.print();
+  setTimeout(()=>document.getElementById('view-view').classList.remove('print-active'),500);
+};
+
+/* demo project */
+document.getElementById('loadDemo').onclick=()=>{
+  state.project={ name:'Marina Tower — Level 12 Fit-out', client:'Emaar Properties', ref:'AFM-2026-0142',
+                  spec:'A. Mohamed', finish:'SN', cur:'AED' };
+  state.doors=[]; state.seq=1;
+  const d1=newDoor('SET-OFF'); d1.ref='D01'; d1.location='Open office entry'; d1.leaf='926×2040×44'; d1.fire='None'; d1.handing='RH inward'; d1.material='Timber flush';
+  const d2=newDoor('SET-FD30'); d2.ref='D02'; d2.location='Corridor fire door'; d2.leaf='926×2040×54'; d2.fire='FD30'; d2.handing='LH outward'; d2.material='Timber flush';
+  const d3=newDoor('SET-BATH'); d3.ref='D03'; d3.location='Accessible WC'; d3.leaf='926×2040×44'; d3.fire='None'; d3.handing='RH inward'; d3.material='Timber flush';
+  const d4=newDoor('SET-ENTRY'); d4.ref='D04'; d4.location='Executive suite (smart entry)'; d4.leaf='1026×2140×54'; d4.fire='None'; d4.handing='RH inward'; d4.material='Timber panelled';
+  /* d4 uses BB hinge -> demonstrates NPI gap out of the box */
+  d1._open=true; d2._open=d3._open=d4._open=false;
+  fillProjectForm(); buildFinishSelect(); renderAll(); showView('schedule');
+};
+
+/* init */
+buildFinishSelect(); fillProjectForm(); renderProjectBadge(); renderSchedule();
+</script>
+</body>
+</html>
