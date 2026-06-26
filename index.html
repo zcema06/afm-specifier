@@ -467,6 +467,8 @@ function el(html){ const t=document.createElement('template'); t.innerHTML=html.
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function finishOptions(sel){ return FINISHES.map(f=>`<option value="${f.id}" ${f.id===sel?'selected':''}>${f.short} · ${f.name}</option>`).join(''); }
 
+/* element refs for project form (ids use hyphens) */
+var p_name=document.getElementById('p-name'),p_client=document.getElementById('p-client'),p_ref=document.getElementById('p-ref'),p_spec=document.getElementById('p-spec'),p_finish=document.getElementById('p-finish'),p_cur=document.getElementById('p-cur');
 /* ---------- Project ---------- */
 function fillProjectForm(){
   p_name.value=state.project.name; p_client.value=state.project.client; p_ref.value=state.project.ref;
@@ -798,7 +800,7 @@ document.getElementById('saveProj').onclick=()=>{
   state.project.finish=p_finish.value; state.project.cur=p_cur.value;
   renderAll(); showView('schedule');
 };
-p_finish && 0;
+/* (removed stray reference that halted script) */
 
 /* schedule buttons */
 document.getElementById('addDoor').onclick=()=>{ newDoor(null); renderSchedule(); renderAll(); };
