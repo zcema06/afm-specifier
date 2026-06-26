@@ -87,6 +87,8 @@
   .itemline .ctrls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
   .itemline select{width:auto;min-width:120px;padding:5px 8px;font-size:.78rem}
   .price{font-variant-numeric:tabular-nums;font-weight:650;white-space:nowrap}
+  .thumb{width:48px;height:48px;border-radius:8px;border:1px solid var(--line);background:#fff;flex:none;object-fit:contain;display:block}
+  .thumb.sm{width:30px;height:30px;border-radius:6px}
   .catprod{border:1px solid var(--line);border-radius:var(--radius);padding:12px;background:#fff}
   .catprod .fin{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
   .swatch{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:6px;padding:3px 7px;font-size:.72rem}
@@ -274,6 +276,46 @@ const CATEGORIES = [
   'Door Closers','Thumbturns','Panic / Exit Devices','Smart & Digital Locks'
 ];
 
+/* ---- Product thumbnails (PLACEHOLDERS) -------------------------------------
+   We don't have real AFM product photos yet, so every product shows a clean,
+   self-contained inline-SVG icon for its hardware CATEGORY. The icons are built
+   at runtime as data: URIs (no external files / network) so the app stays fully
+   self-contained and works offline.
+
+   >>> SWAPPING IN REAL PHOTOS <<<
+   Every product gets an `image` field (see the default-assignment loop just
+   below PRODUCTS). To use a real product photo, simply give that product an
+   `image:` value in its PRODUCTS entry — a URL ('https://…/FH2701R01.jpg') or a
+   local file path ('photos/FH2701R01.jpg'). Any product that already has an
+   `image` keeps it; only products WITHOUT one fall back to the category icon.
+   --------------------------------------------------------------------------- */
+function svgThumb(inner){
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">`
+    + `<rect width="48" height="48" rx="9" fill="#eef4fa"/>`
+    + `<g fill="none" stroke="#0f4c81" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">`
+    + inner + `</g></svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+const CATEGORY_ICON = {
+  /* lever handle on a round rose */
+  'Handles & Levers': svgThumb('<circle cx="15" cy="24" r="5"/><path d="M15 24 H37"/><path d="M37 24 v6"/>'),
+  /* door leaf with keyhole + knob */
+  'Door Locks': svgThumb('<rect x="13" y="9" width="22" height="30" rx="2"/><circle cx="26" cy="21" r="2.4"/><path d="M26 23 v5"/><circle cx="19" cy="24" r="1.4"/>'),
+  /* euro-profile cylinder (pear shape) */
+  'Cylinders': svgThumb('<circle cx="24" cy="17" r="7"/><path d="M20.5 22 h7 l-2 14 h-3 z"/>'),
+  /* two hinge leaves + centre pin */
+  'Hinges': svgThumb('<rect x="11" y="12" width="11" height="24" rx="1"/><rect x="26" y="12" width="11" height="24" rx="1"/><path d="M24 11 v26"/>'),
+  /* closer body + arm linkage */
+  'Door Closers': svgThumb('<rect x="9" y="16" width="18" height="11" rx="2"/><path d="M27 21 l9 -5"/><path d="M30 14 l8 5"/>'),
+  /* thumbturn knob on rose */
+  'Thumbturns': svgThumb('<circle cx="24" cy="25" r="9"/><rect x="22.5" y="14" width="3" height="12" rx="1.5"/>'),
+  /* horizontal push / panic bar */
+  'Panic / Exit Devices': svgThumb('<rect x="9" y="20" width="30" height="8" rx="4"/><path d="M15 28 v4"/><path d="M33 28 v4"/>'),
+  /* digital keypad */
+  'Smart & Digital Locks': svgThumb('<rect x="15" y="9" width="18" height="30" rx="3"/><circle cx="21" cy="18" r="1.3"/><circle cx="27" cy="18" r="1.3"/><circle cx="21" cy="24" r="1.3"/><circle cx="27" cy="24" r="1.3"/><circle cx="21" cy="30" r="1.3"/><circle cx="27" cy="30" r="1.3"/>')
+};
+function categoryImage(cat){ return CATEGORY_ICON[cat] || svgThumb('<circle cx="24" cy="24" r="9"/>'); }
+
 /* ---- Helper: build the per-finish SKU map for a product --------------------
    `priced` maps finishId -> price. Finishes NOT listed here are intentionally
    "not catalogued yet" -> they become NPI / New-SKU-request candidates.        */
@@ -365,6 +407,12 @@ const PRODUCTS = [
   { key:'FGMSL30N03', model:'FGMSL30', variant:'N03', name:'Networked Access Reader', category:'Smart & Digital Locks',
     skus: skus('FGMSL30','N03',{SN:430,SS:455}) }
 ];
+
+/* ---- Product image defaults -------------------------------------------------
+   Give every product an `image`. Products that already declared an `image:`
+   above (e.g. a real photo URL/path) keep it; the rest fall back to their
+   category placeholder thumbnail. Replace per-product to use real photos. */
+PRODUCTS.forEach(p=>{ if(!p.image) p.image = categoryImage(p.category); });
 
 /* ---- HARDWARE SET LIBRARY ---------------------------------------------------
    Each set is a reusable bundle of catalogue items with a default finish + qty.
@@ -536,16 +584,19 @@ function renderSchedule(){
     d.items.forEach((it,idx)=>{
       const p=PMAP[it.prod]; const r=resolve(it.prod,it.finish);
       const line=el(`<div class="itemline"></div>`);
-      const left=el(`<div></div>`);
-      left.appendChild(el(`<div class="nm">${esc(p?p.name:it.prod)}</div>`));
+      const left=el(`<div style="display:flex;gap:10px;align-items:flex-start"></div>`);
+      if(p) left.appendChild(el(`<img class="thumb" src="${p.image}" alt="${esc(p.category)} thumbnail">`));
+      const tcol=el(`<div style="flex:1;min-width:0"></div>`);
+      tcol.appendChild(el(`<div class="nm">${esc(p?p.name:it.prod)}</div>`));
       const meta=el(`<div class="meta"></div>`);
       meta.appendChild(el(`<span class="chip">${esc(p?p.category:'?')}</span>`));
       meta.appendChild(el(`<span class="sku ${r.ok?'':'gap'}">${esc(r.sku)}</span>`));
       meta.appendChild(el(`<span class="badge ${r.ok?'ok':'gap'}">${r.ok?'SKU OK':'NPI'}</span>`));
-      left.appendChild(meta);
+      tcol.appendChild(meta);
       if(!r.ok){
-        left.appendChild(el(`<div class="flagline"><b>⚑ NPI</b><div>${esc(p?p.name:it.prod)} is not catalogued in <b>${esc(FMAP[it.finish]?.name||it.finish)}</b> yet — flag as a <b>new SKU request</b>. Suggested code: <span class="sku gap">${esc(p?p.model+p.variant+it.finish+(FMAP[it.finish]?.num||'000'):'')}</span></div></div>`));
+        tcol.appendChild(el(`<div class="flagline"><b>⚑ NPI</b><div>${esc(p?p.name:it.prod)} is not catalogued in <b>${esc(FMAP[it.finish]?.name||it.finish)}</b> yet — flag as a <b>new SKU request</b>. Suggested code: <span class="sku gap">${esc(p?p.model+p.variant+it.finish+(FMAP[it.finish]?.num||'000'):'')}</span></div></div>`));
       }
+      left.appendChild(tcol);
       const right=el(`<div class="ctrls"></div>`);
       const fsel=el(`<select title="Finish">${finishOptions(it.finish)}</select>`);
       fsel.onchange=e=>{ it.finish=e.target.value; renderSchedule(); renderAll(); };
@@ -598,7 +649,7 @@ function renderScheduleDoc(){
     d.items.forEach(it=>{
       const p=PMAP[it.prod]; const r=resolve(it.prod,it.finish);
       tb.appendChild(el(`<tr>
-        <td>${esc(p?p.name:it.prod)}</td>
+        <td><div style="display:flex;gap:8px;align-items:center">${p?`<img class="thumb sm" src="${p.image}" alt="">`:''}<span>${esc(p?p.name:it.prod)}</span></div></td>
         <td class="muted">${esc(p?p.category:'')}</td>
         <td><span class="sku ${r.ok?'':'gap'}">${esc(r.sku)}</span> ${r.ok?'':'<span class="badge gap">NPI</span>'}</td>
         <td>${esc(FMAP[it.finish]?.short||it.finish)}</td>
@@ -648,9 +699,13 @@ function renderCatalogue(){
     .filter(p=>{ if(!q)return true; const hay=(p.model+p.variant+p.name+p.category+Object.values(p.skus).map(s=>s.sku).join(' ')).toLowerCase(); return hay.includes(q);})
     .forEach(p=>{
       const c=el(`<div class="catprod"></div>`);
-      c.appendChild(el(`<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
-          <h3 style="margin:0">${esc(p.name)}</h3><span class="sku">${esc(p.model+p.variant)}</span></div>
-          <div class="muted tiny" style="margin:2px 0 4px">${esc(p.category)}</div>`));
+      c.appendChild(el(`<div style="display:flex;gap:10px;align-items:flex-start">
+          <img class="thumb" src="${p.image}" alt="${esc(p.category)} thumbnail">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
+              <h3 style="margin:0">${esc(p.name)}</h3><span class="sku">${esc(p.model+p.variant)}</span></div>
+            <div class="muted tiny" style="margin:2px 0 0">${esc(p.category)}</div>
+          </div></div>`));
       const fin=el(`<div class="fin"></div>`);
       FINISHES.forEach(f=>{
         const e=p.skus[f.id];
