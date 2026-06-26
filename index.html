@@ -197,8 +197,8 @@
 
   <!-- ============== CATALOGUE ============== -->
   <section class="view" id="view-catalogue">
-    <div class="card"><h2>Sample catalogue</h2>
-      <p class="muted small" style="margin-top:-4px">Representative AFM sample catalogue. SKUs follow the <b>model + variant + finish</b> encoding (e.g. <span class="sku">FH2701R01SN201</span>). The real ~1,000-SKU Oracle master export replaces the data block at the top of this file.</p>
+    <div class="card"><h2>Catalogue</h2>
+      <p class="muted small" style="margin-top:-4px"><b>Hinges are now REAL AFM products</b> — model, FG/SKU codes, specs and photos extracted from the live AFM hinge datasheets. Other categories remain representative samples (model + variant + finish encoding). Hinge <b>prices are sample placeholders</b> (datasheets carry no pricing) pending the B2B price list.</p>
       <div class="pill-tabs" id="catFilter" style="margin-top:10px"></div>
       <input id="catSearch" placeholder="Search model, name or SKU…" style="margin-top:4px">
     </div>
@@ -367,14 +367,43 @@ const PRODUCTS = [
   { key:'FGMCYKA03', model:'FGMCY', variant:'KA03', name:'Keyed-Alike Cylinder Set', category:'Cylinders',
     skus: skus('FGMCY','KA03',{SN:38,SS:43,PC:41}) },
 
-  /* --- Hinges (FGMHG….) --- */
-  { key:'FGMHGSA01', model:'FGMHG', variant:'SA01', name:'Ball-Bearing Hinge 102×76 (Grade 13)', category:'Hinges',
-    /* NOTE: intentional gap — no Black (BB) SKU yet -> NPI candidate */
-    skus: skus('FGMHG','SA01',{SN:9,SS:11,PC:10,PB:13}) },
-  { key:'FGMHGSA02', model:'FGMHG', variant:'SA02', name:'Fire-Rated Hinge FD60 (CE)', category:'Hinges',
-    skus: skus('FGMHG','SA02',{SN:12,SS:14,PC:13}) },
-  { key:'FGMHGRS03', model:'FGMHG', variant:'RS03', name:'Rising Butt Hinge', category:'Hinges',
-    skus: skus('FGMHG','RS03',{SN:11,SS:13}) },
+  /* === Hinges — REAL AFM PRODUCTS =========================================
+     Wired from the live AFM hinge datasheets (SharePoint › Ahram Product
+     Datasheets › Door hardware › Hinges). Each finish carries its REAL FG/SKU
+     code from the datasheet; `image` is the REAL product photo extracted from
+     the datasheet (photos/<FGcode>.jpg); `spec` is the real spec summary.
+
+     >>> PRICING: SAMPLE / PLACEHOLDER ONLY <<<
+     Datasheets carry NO prices. The per-finish prices below are illustrative
+     placeholders (project currency) so the schedule shows real-looking totals.
+     Replace with the B2B project price list when available.            */
+  { key:'H1CL', model:'H1', variant:'CL', name:'Case Hinge H1 — Classic (Grade 13)', category:'Hinges',
+    image:'photos/FGMHGSAHM004.jpg',
+    spec:'Steel butt hinge · 120×86×3mm (5") · 10 screw holes · flush doors up to 80kg · 200,000 cycles · entrance & interior doors',
+    skus:{ SN:{sku:'FGMHGSAHM004', price:12}, PB:{sku:'FGMHGSAHM003', price:14}, BZ:{sku:'FGMHGSAHM007', price:15} } },
+  { key:'H2BL', model:'H2', variant:'BL', name:'SS Ball-Bearing Hinge H2 (Grade 13 · FD · CE)', category:'Hinges',
+    image:'photos/FGMHGSAFM018.jpg',
+    spec:'Stainless steel SS304 · 4"×3"×3mm · 2 ball bearings, 5 knuckles · Grade 13 · CE-marked · fire-rated BS EN 1634 (120 min) · 240h anti-corrosion · 200,000 cycles · 120kg',
+    /* only Black (FGMHGSAFM018) catalogued -> Satin/Stainless requests = NPI candidates */
+    skus:{ BB:{sku:'FGMHGSAFM018', price:28} } },
+  { key:'H3BR', model:'H3', variant:'BR', name:'Ball-Bearing Butt Hinge H3 (2 rings, 5 knuckles)', category:'Hinges',
+    image:'photos/FGMHGSAHM109.jpg',
+    spec:'Steel · 4"×3"×3mm · 5 knuckles, two rings, button tip · 100kg · 200,000 cycles · 120h anti-corrosion · timber & metal doors',
+    skus:{ SN:{sku:'FGMHGSAHM109', price:14}, BB:{sku:'FGMHGSAHM117', price:15} } },
+  { key:'H5SF', model:'H5', variant:'SF', name:'Flush Hinge H5 — Stainless (AFM, non-mortise)', category:'Hinges',
+    image:'photos/FGMHGSAFM098.jpg',
+    spec:'Stainless steel SS304 · 100×75.5×2mm · two rings, three knuckles, button tip · flush / no mortising · 40kg · single & double doors · 25,000 cycles',
+    /* only Satin Stainless (FGMHGSAFM098) catalogued */
+    skus:{ SS:{sku:'FGMHGSAFM098', price:16} } },
+  { key:'H5ST', model:'H5', variant:'ST', name:'Flush Hinge H5 — Steel (non-mortise)', category:'Hinges',
+    image:'photos/FGMHGSAHM110.jpg',
+    spec:'Steel · 100×75.5×2.5mm · two rings, three knuckles · flush / no mortising · Grade 6 · 25,000 cycles · BS EN 1935:2002 · timber doors & windows',
+    skus:{ SN:{sku:'FGMHGSAHM110', price:11}, PB:{sku:'FGMHGSAHM369', price:12}, BB:{sku:'FGMHGSAHM370', price:11} } },
+  { key:'H7CN', model:'H7', variant:'CN', name:'Adjustable Concealed Hinge H7 (3D · 180°)', category:'Hinges',
+    image:'photos/FGMHGCAFM007.jpg',
+    spec:'3D adjustable concealed hinge · zinc-alloy body, aluminium joiners · flush-mounted · adjust V±3 / H±2.5 / D±1mm · 180° opening · 40kg (2 per leaf) · min door 35mm · max width 850mm',
+    /* only Matt Black (FGMHGCAFM007) catalogued -> Satin Nickel request = NPI candidate */
+    skus:{ BB:{sku:'FGMHGCAFM007', price:45} } },
 
   /* --- Door Closers (FGMDC….) --- */
   { key:'FGMDC30A01', model:'FGMDC30', variant:'A01', name:'Overhead Closer EN 2-4', category:'Door Closers',
@@ -425,7 +454,7 @@ const HARDWARE_SETS = [
       { prod:'FH2701R01', finish:'SN', qty:1 },
       { prod:'FGML50S01', finish:'SN', qty:1 },
       { prod:'FGMCYSA01', finish:'SN', qty:1 },
-      { prod:'FGMHGSA01', finish:'SN', qty:3 },
+      { prod:'H3BR', finish:'SN', qty:3 },
       { prod:'FGMDC30A01',finish:'SN', qty:1 }
     ]},
   { id:'SET-FD30', name:'Fire door FD30 set',
@@ -434,7 +463,7 @@ const HARDWARE_SETS = [
       { prod:'FH2740R01', finish:'SS', qty:1 },
       { prod:'FGML55E01', finish:'SS', qty:1 },
       { prod:'FGMCYSA01', finish:'SS', qty:1 },
-      { prod:'FGMHGSA02', finish:'SS', qty:3 },
+      { prod:'H2BL', finish:'BB', qty:3 },
       { prod:'FGMDC35C01',finish:'SS', qty:1 }
     ]},
   { id:'SET-FD60', name:'Fire door FD60 set (free-swing)',
@@ -443,7 +472,7 @@ const HARDWARE_SETS = [
       { prod:'FH2740R01', finish:'SS', qty:1 },
       { prod:'FGML55E01', finish:'SS', qty:1 },
       { prod:'FGMCYSA01', finish:'SS', qty:1 },
-      { prod:'FGMHGSA02', finish:'SS', qty:4 },
+      { prod:'H2BL', finish:'BB', qty:4 },
       { prod:'FGMDC40F01',finish:'SS', qty:1 }
     ]},
   { id:'SET-BATH', name:'Bathroom set',
@@ -452,14 +481,14 @@ const HARDWARE_SETS = [
       { prod:'FH2860R01', finish:'SN', qty:1 },
       { prod:'FGML52B01', finish:'SN', qty:1 },
       { prod:'FGMTTSA01', finish:'SN', qty:1 },
-      { prod:'FGMHGSA01', finish:'SN', qty:2 }
+      { prod:'H5ST', finish:'SN', qty:2 }
     ]},
   { id:'SET-ESC', name:'Escape / final-exit door set',
     desc:'Touch-bar panic exit, outside access lever, fire hinges, FD closer.',
     items:[
       { prod:'FGMPE85T02', finish:'SS', qty:1 },
       { prod:'FGMPE90O03', finish:'SS', qty:1 },
-      { prod:'FGMHGSA02', finish:'SS', qty:3 },
+      { prod:'H2BL', finish:'BB', qty:3 },
       { prod:'FGMDC35C01',finish:'SS', qty:1 }
     ]},
   { id:'SET-ENTRY', name:'Smart entrance set',
@@ -467,7 +496,7 @@ const HARDWARE_SETS = [
     items:[
       { prod:'FGMSL20F02', finish:'BB', qty:1 },
       { prod:'FH2810D01',  finish:'BB', qty:1 },
-      { prod:'FGMHGSA01',  finish:'BB', qty:3 }   /* BB hinge -> intentional NPI gap */
+      { prod:'H7CN',  finish:'SN', qty:3 }   /* H7 concealed only catalogued in Black -> Satin Nickel = intentional NPI gap */
     ]}
 ];
 
@@ -593,6 +622,7 @@ function renderSchedule(){
       meta.appendChild(el(`<span class="sku ${r.ok?'':'gap'}">${esc(r.sku)}</span>`));
       meta.appendChild(el(`<span class="badge ${r.ok?'ok':'gap'}">${r.ok?'SKU OK':'NPI'}</span>`));
       tcol.appendChild(meta);
+      if(p&&p.spec){ tcol.appendChild(el(`<div class="muted tiny" style="margin:3px 0 0;line-height:1.35">${esc(p.spec)}</div>`)); }
       if(!r.ok){
         tcol.appendChild(el(`<div class="flagline"><b>⚑ NPI</b><div>${esc(p?p.name:it.prod)} is not catalogued in <b>${esc(FMAP[it.finish]?.name||it.finish)}</b> yet — flag as a <b>new SKU request</b>. Suggested code: <span class="sku gap">${esc(p?p.model+p.variant+it.finish+(FMAP[it.finish]?.num||'000'):'')}</span></div></div>`));
       }
@@ -705,6 +735,7 @@ function renderCatalogue(){
             <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
               <h3 style="margin:0">${esc(p.name)}</h3><span class="sku">${esc(p.model+p.variant)}</span></div>
             <div class="muted tiny" style="margin:2px 0 0">${esc(p.category)}</div>
+            ${p.spec?`<div class="muted small" style="margin:5px 0 0;line-height:1.4">${esc(p.spec)}</div>`:''}
           </div></div>`));
       const fin=el(`<div class="fin"></div>`);
       FINISHES.forEach(f=>{
