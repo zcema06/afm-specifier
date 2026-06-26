@@ -359,13 +359,74 @@ const PRODUCTS = [
   { key:'FGML70R01', model:'FGML70', variant:'R01', name:'Roller Latch (FD-rated)', category:'Door Locks',
     skus: skus('FGML70','R01',{SN:22,SS:25,PC:24}) },
 
-  /* --- Cylinders (FGMCY….) --- */
-  { key:'FGMCYSA01', model:'FGMCY', variant:'SA01', name:'Euro Double Cylinder 70mm', category:'Cylinders',
-    skus: skus('FGMCY','SA01',{SN:29,BB:31,SS:33,PC:32}) },
-  { key:'FGMCYSA02', model:'FGMCY', variant:'SA02', name:'Euro Thumbturn Cylinder 70mm', category:'Cylinders',
-    skus: skus('FGMCY','SA02',{SN:34,BB:36,SS:39,PC:38}) },
-  { key:'FGMCYKA03', model:'FGMCY', variant:'KA03', name:'Keyed-Alike Cylinder Set', category:'Cylinders',
-    skus: skus('FGMCY','KA03',{SN:38,SS:43,PC:41}) },
+  /* === Cylinders — REAL AFM PRODUCTS =======================================
+     Wired from the live AFM Cylinder datasheets (SharePoint › Ahram Product
+     Datasheets › Door hardware › Cylinders › Data sheets). Each finish carries
+     its REAL FG/SKU code from the datasheet filename + datasheet body; `spec`
+     is the real spec summary (model, type, pins, length, brass body, EN1303).
+     Finish map: no-mark/satin/raw -> SN, "black" -> BB, "antique" -> BZ,
+     "polished/nickel-plated" -> PC.
+     >>> PRICING: SAMPLE / PLACEHOLDER ONLY <<< (datasheets carry no prices).
+     >>> PHOTOS: pending — embedded datasheet photos could not be transferred
+         in this environment (no working browser->repo binary channel); using
+         category-icon fallback for now. Real FG-named photos to follow.      */
+  /* --- Double cylinders (key both ends) --- */
+  { key:'CY01', model:'CY-01', variant:'DK', name:'Euro Double Cylinder CY-01 (5-pin, keys both ends, 70mm)', category:'Cylinders',
+    spec:'AHRAM euro profile double cylinder · 5 pins, keys both ends · 70mm (35×35) · solid brass body & plug · 100,000 cycles · EN 1303:2015 · timber & metal doors',
+    skus:{ SN:{sku:'FGMCYSAHM018', price:30}, BB:{sku:'FGMCYSAFM130', price:33}, BZ:{sku:'FGMCYSAHM084', price:36} } },
+  { key:'CY05', model:'CY-05', variant:'DK', name:'Euro Double Cylinder CY-05 (DK, 5-pin, 70mm)', category:'Cylinders',
+    spec:'Euro profile double cylinder DK · 5 pins, keys both ends · 70mm (35×35) · solid brass · 100,000 cycles · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYDAFM126', price:29}, BB:{sku:'FGMCYDAFM167', price:32} } },
+  { key:'CY19', model:'CY-19', variant:'DKI1', name:'High-Security Cylinder CY-19 (DKI1, 6-pin, fire-rated)', category:'Cylinders',
+    spec:'High-security euro profile cylinder (DKI1) · 6 pins, keys both ends · 70mm/80mm · fire-resistant · master & grand-master keyable · solid brass · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYDAFM128', price:58} } },
+  { key:'CY16', model:'CY-16', variant:'WP', name:'Euro Double Cylinder CY-16 (6-pin, Weiser profile)', category:'Cylinders',
+    spec:'Euro profile double cylinder · 6 pins, keys both ends · Weiser profile · 70mm · master & grand-master keyable · solid brass · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYWAFM331', price:48} } },
+  { key:'CY25', model:'CY-25', variant:'DKA', name:'Euro Double Cylinder CY-25 (DKA, 5-pin)', category:'Cylinders',
+    spec:'AHRAM euro profile double cylinder DKA · 5 pins, keys both ends · solid brass · 100,000 cycles · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYDAHM021', price:36} } },
+  { key:'CY45', model:'CY-45', variant:'DKi1', name:'Euro Double Cylinder CY-45 (DKi1, 7-pin)', category:'Cylinders',
+    spec:'AHRAM euro profile double cylinder DKi1 · 7 pins, keys both ends · 70mm (35×35) · master & grand-master keyable · solid brass · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYDAHM030', price:75} } },
+  { key:'CY49', model:'CY-49', variant:'DK', name:'Euro Double Cylinder CY-49 (DK, 6-pin, 70mm)', category:'Cylinders',
+    spec:'Euro profile double cylinder DK · 6 pins, keys both sides · 70mm (35×35) · solid brass · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYDAFM170', price:42} } },
+  /* --- Cylinder with thumbturn (outside key / inside knob) --- */
+  { key:'CY27', model:'CY-27', variant:'TT', name:'Thumbturn Cylinder CY-27 (DK, 5-pin, key/knob, 70mm)', category:'Cylinders',
+    spec:'Euro profile cylinder DK · outside key / inside knob · 5 pins · 70mm (35×35) · solid brass · 100,000 cycles · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYDAFM129', price:38}, BB:{sku:'FGMCYDAFM187', price:41} } },
+  { key:'CY14', model:'CY-14', variant:'TT', name:'Bathroom Thumbturn Cylinder CY-14 (70mm)', category:'Cylinders',
+    spec:'Euro profile thumb-turn bathroom cylinder · 70mm (35×35) · solid brass · 100,000 cycles · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYSAFM117', price:34}, BB:{sku:'FGMCYSAFM119', price:37} } },
+  { key:'CY03', model:'CY-03', variant:'TT', name:'Thumbturn Cylinder CY-03 (5-pin, key/knob)', category:'Cylinders',
+    spec:'Euro profile cylinder · 5 pins · outside key / inside knob · solid brass · 100,000 cycles · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYSAFM118', price:36}, BB:{sku:'FGMCYSAFM131', price:39} } },
+  { key:'CY24', model:'CY-24', variant:'DKI1', name:'High-Security Thumbturn Cylinder CY-24 (DKI1, 6-pin)', category:'Cylinders',
+    spec:'High-security euro profile cylinder (DKI1) · 6 pins · outside key / inside knob · 70mm/80mm · master & grand-master keyable · solid brass · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYDAFM162', price:62} } },
+  { key:'CY50', model:'CY-50', variant:'DK', name:'Thumbturn Cylinder CY-50 (DK, 6-pin, key/knob, 70mm)', category:'Cylinders',
+    spec:'Euro profile cylinder DK · 6 pins · outside key / inside knob · 70mm (35×35) · solid brass · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYDAFM171', price:46} } },
+  { key:'CY21', model:'CY-21', variant:'WP', name:'Thumbturn Cylinder CY-21 (6-pin, Weiser, key/knob)', category:'Cylinders',
+    spec:'Euro profile cylinder · 6 pins · outside key / inside knob · Weiser profile · 70mm (35×35) · master & grand-master keyable · solid brass · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYWAFM337', price:52} } },
+  { key:'CY61', model:'CY-61', variant:'DKi1', name:'High-Security Thumbturn Cylinder CY-61 (DKi1, 7-pin)', category:'Cylinders',
+    spec:'AHRAM euro profile cylinder DKi1 · 7 pins · outside key / inside knob, keys both ends · 70mm (35×35) · master & grand-master keyable · solid brass · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYDAHM375', price:78} } },
+  /* --- Half cylinders --- */
+  { key:'CY41', model:'CY-41', variant:'HALF', name:'Bathroom Half Cylinder CY-41 (thumb-turn, 45mm)', category:'Cylinders',
+    spec:'Euro profile thumb-turn bathroom HALF cylinder · 45mm (35×10) · solid brass · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYSAFM141', price:24} } },
+  { key:'CY46', model:'CY-46', variant:'HALF', name:'Euro Half Cylinder CY-46 (DKi1, 7-pin, 45mm)', category:'Cylinders',
+    spec:'AHRAM euro profile HALF cylinder DKi1 · 7 pins · 45mm (10×35) · master & grand-master keyable · solid brass · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYDAHM374', price:55} } },
+  { key:'CY30', model:'CY-30', variant:'DKI1', name:'Euro Half Cylinder CY-30 (DKI1, 6-pin, fire-rated)', category:'Cylinders',
+    spec:'Euro profile HALF cylinder DKI1 · 6 pins · fire-resistant · 45mm (10×35) / 50mm (10×40) · master & grand-master keyable · solid brass · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYDAFM169', price:40} } },
+  { key:'CY34', model:'CY-34', variant:'WP', name:'Euro Half Cylinder CY-34 (6-pin, Weiser profile)', category:'Cylinders',
+    spec:'Euro profile HALF cylinder · 6 pins · Weiser profile · 45mm (35×10) · master & grand-master keyable · solid brass · EN 1303:2015',
+    skus:{ SN:{sku:'FGMCYWAFM338', price:38} } },
 
   /* === Hinges — REAL AFM PRODUCTS =========================================
      Wired from the live AFM hinge datasheets (SharePoint › Ahram Product
@@ -453,7 +514,7 @@ const HARDWARE_SETS = [
     items:[
       { prod:'FH2701R01', finish:'SN', qty:1 },
       { prod:'FGML50S01', finish:'SN', qty:1 },
-      { prod:'FGMCYSA01', finish:'SN', qty:1 },
+      { prod:'CY01', finish:'SN', qty:1 },
       { prod:'H3BR', finish:'SN', qty:3 },
       { prod:'FGMDC30A01',finish:'SN', qty:1 }
     ]},
@@ -462,7 +523,7 @@ const HARDWARE_SETS = [
     items:[
       { prod:'FH2740R01', finish:'SS', qty:1 },
       { prod:'FGML55E01', finish:'SS', qty:1 },
-      { prod:'FGMCYSA01', finish:'SS', qty:1 },
+      { prod:'CY01', finish:'SS', qty:1 },
       { prod:'H2BL', finish:'BB', qty:3 },
       { prod:'FGMDC35C01',finish:'SS', qty:1 }
     ]},
@@ -471,7 +532,7 @@ const HARDWARE_SETS = [
     items:[
       { prod:'FH2740R01', finish:'SS', qty:1 },
       { prod:'FGML55E01', finish:'SS', qty:1 },
-      { prod:'FGMCYSA01', finish:'SS', qty:1 },
+      { prod:'CY01', finish:'SS', qty:1 },
       { prod:'H2BL', finish:'BB', qty:4 },
       { prod:'FGMDC40F01',finish:'SS', qty:1 }
     ]},
